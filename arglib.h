@@ -24,11 +24,12 @@ typedef struct cli_context
 {
 	void	*userdata;
 	bool	is_short_flag;
+	bool	flag_stop;
 
 	struct cli_context	*next;
 } cli_context;
 
-typedef cli_context *(*flag_handler_function)(cli_context *cli_context, char *clean_arg, char **argv);
+typedef cli_context *(*flag_handler_function)(cli_context *cli_context, char *clean_arg, char **argv, bool is_short_flag);
 
 typedef struct cli_flag_handler
 {
@@ -47,7 +48,7 @@ typedef struct cli_flag_config
 extern const cli_flag_handler flags[];
 extern const cli_flag_config flag_config;
 
-uint8_t arglib(int argc, char **argv, cli_context *ctx);
+cli_context	*arglib(int argc, char **argv);
 const char	*is_cli_flag_handler_valid(const cli_flag_handler *flags);
 
 #endif

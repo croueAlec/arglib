@@ -4,20 +4,23 @@
 
 const cli_flag_config flag_config = { true, false, false, false };
 
-cli_context	*new_context(void)
+cli_context	*new_context(cli_context *current_ctx)
 {
-	cli_context	*ctx = calloc(1, sizeof(cli_context));
-	if (ctx == NULL)
+	cli_context	*new = calloc(1, sizeof(cli_context));
+	if (new == NULL)
 		return (NULL);
 
-	ctx->userdata = calloc(1, sizeof(cli_userdata));
-	if (ctx->userdata == NULL)
+	new->userdata = calloc(1, sizeof(cli_userdata));
+	if (new->userdata == NULL)
 		return (NULL);
+	printf("userdata created\n");
 
-	return (ctx);
+	if (current_ctx != NULL)
+		current_ctx->next = new;
+	return (new);
 }
 
-cli_context *flag_verbose_handle(cli_context *ptr1, char *clean_arg, char **argv)
+cli_context *flag_verbose_handle(cli_context *ptr1, char *clean_arg, char **argv, bool is_short_flag)
 {
 	cli_context	*list = ptr1;
 	printf("verbose : %s\n", argv[0]);
@@ -25,61 +28,74 @@ cli_context *flag_verbose_handle(cli_context *ptr1, char *clean_arg, char **argv
 	(void)list;
 	(void)argv;
 	(void)clean_arg;
+	(void)is_short_flag;
 	return (NULL);
 }
 
-cli_context *flag_help_handle(cli_context *ctx, char *clean_arg, char **argv)
+cli_context *flag_help_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
 	cli_context	*list = ctx;
 	printf("help : %s\n", argv[0]);
 	(void)list;
 	(void)argv;
 	(void)clean_arg;
+	(void)is_short_flag;
 	return (NULL);
 }
 
-cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **argv)
+cli_context *create_str_ctx_node(char *str)
+{
+	cli_context *new = new_context(NULL);
+	if (!new)
+		return (NULL);
+
+	((cli_userdata*)new->userdata)->str = strdup(str);
+	if (((cli_userdata*)new->userdata)->str == NULL)
+		return (NULL);
+
+	new->flag_stop = true;
+
+	return (new);
+}
+
+cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
 	printf("clean arg : %s\n", clean_arg);
 	char		*value = NULL;
-	cli_context	*new = new_context();
-	if (new == NULL)
+
+	ctx = new_context(ctx);	// check leaks userdata malloc fail
+	if (ctx == NULL)
 		return (NULL);
 
-	ctx->next = new;
+	printf("\t\t\tuserdata check : %p\n", ctx->userdata);
 
-	if (ctx->is_short_flag == false) {
-		char	*separator = strchr(clean_arg, '=');
-		if (separator != NULL) {
-			*separator = '\0';
+	((cli_userdata *)ctx->next)->flag_infile = true;
+
+	if (is_short_flag == false) {					// --file=file
+		clean_arg = strchr(clean_arg, '=');						// --file=file --file file --file=
+		if (clean_arg == NULL) {
+			return (ctx);					// --file
 		}
 
-		if (separator != NULL) {
-			new->next = new_context();
-			if (new->next == NULL)
-				return (NULL);				// check leaks in the original new in case of failure
-
-			((cli_userdata *)new->next)->filename = strdup(&separator[1]);
-			if (((cli_userdata *)new->next)->filename == NULL)
-				return (NULL);
-			((cli_userdata *)new->next)->flag_inline_infile = true;
-			printf("filename string %s\n", ((cli_userdata *)new->next)->filename);
-
-			new = new->next;
+		if (strlen(&clean_arg[1]) == 0) {
+			return (NULL);					// handle error --file= ...
 		}
-	} else if (ctx->is_short_flag == true && strlen(clean_arg) > 1) {
-		new->next = new_context();
-		if (new->next == NULL)
+	}
+
+	if (is_short_flag == true && strlen(clean_arg) == 1)
+		return (ctx);
+
+	else if (is_short_flag == true && strlen(clean_arg) > 1) {	// -ffile
+		ctx->next = create_str_ctx_node(&clean_arg[1]);
+		if (ctx->next == NULL)
 			return (NULL);					// check leaks in the original new in case of failure
 
-		((cli_userdata *)new->next)->filename = strdup(&clean_arg[1]);		// check the index that gets sent as a clean arg in the single argument if clean arg starts with the single or from the beginning
-		if (((cli_userdata *)new->next)->filename == NULL)
-			return (NULL);
-		((cli_userdata *)new->next)->flag_inline_infile = true;
-		printf("filename single char %s\n", ((cli_userdata *)new->next)->filename);
+		printf("filename single char '%s'\n", ((cli_userdata *)ctx->next)->str);
 
-		new = new->next;
+		ctx = ctx->next;
 	}
+
+	printf("file option handle new check %p\n", new);
 
 	(void)clean_arg;
 	(void)value;
@@ -116,11 +132,12 @@ const cli_flag_handler flags[] = {
 
 void	print_userdata(cli_context *list)
 {
-	cli_userdata	*userdata = list->userdata;
-	printf("%p\n", userdata);
-	
-	while (list->next != NULL)
+	printf("list check : %p\n", list);
+	printf("list->userdata check : %p\n", list->userdata);
+
+	do
 	{
+		cli_userdata	*userdata = list->userdata;
 		printf("help %d\n", userdata->flag_help);
 		printf("infile %d\n", userdata->flag_infile);
 		printf("inline infile %d\n", userdata->flag_inline_infile);
@@ -129,8 +146,7 @@ void	print_userdata(cli_context *list)
 		printf("%s\n", userdata->str);
 		printf("\n");
 		list = list->next;
-		userdata = list->userdata;
-	}
+	} while (list);
 	
 }
 
@@ -146,10 +162,29 @@ int	main(int argc, char **argv)
 	if (!list)
 		return ((void)dprintf(2, "malloc error list main"), 1);
 
-	arglib(argc - 1, &argv[1], list);
+	printf("ctx check : %p\n", list);
+
+	list = arglib(argc - 1, &argv[1]);
 	printf("list created\n");
 	print_userdata(list);
 
 	(void)argc;
 	return 0;
 }
+
+/* 
+Command examples :
+
+grep -f patterns
+grep -fpatterns
+grep --file patterns
+grep --file patterns --file=p2 -fp3
+grep --filepatterns	<< KO
+*/
+
+/* 
+
+Each detected flag triggers it's handler
+each handler creates a new node
+
+*/

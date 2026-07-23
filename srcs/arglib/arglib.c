@@ -22,16 +22,14 @@ static cli_context *handle_long_flag(char *current_arg, cli_context *ctx, size_t
 		}
 	}
 
-	printf("error --flag does not match\n");
+	dprintf(2, "arguments: unrecognized option '--%s'\nTry 'arguments --help' for more information.", current_arg);
 	return (NULL);
 }
 
-// handle these edge cases 'ls --W' 'ls -W'
 static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_t flag_list_length, char **argv)
 {
 	cli_context	*new = NULL;
 	bool		flag_found = false;
-	// ctx->is_short_flag = true;
 	if (current_arg[0] == '\0')
 		return (false);
 
@@ -54,14 +52,12 @@ static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_
 
 		}
 
-		if (flag_found == false)		// handle error better
-			return (NULL);
+		if (flag_found == false)
+			return (dprintf(2, "arguments: invalid option -- '%c'\nTry 'arguments --help' for more information.\n", current_arg[j]), NULL);
 
 		flag_found = false;
 	}
 
-	if (flag_found == false)
-		printf("invalid argument %c\n", current_arg[j]);
 	return (ctx);
 
 	// flag invalid (stop all + error)

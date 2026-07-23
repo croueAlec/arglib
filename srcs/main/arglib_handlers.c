@@ -118,14 +118,14 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 
 	((cli_userdata *)ctx->userdata)->flag_infile = true;
 
-	if (is_short_flag == false) {					// --file=file
-		clean_arg = strchr(clean_arg, '=');						// --file=file --file file --file=
+	if (is_short_flag == false) {
+		clean_arg = strchr(clean_arg, '=');
 		if (clean_arg == NULL) {
-			return (ctx);					// --file
+			return (ctx);
 		}
 
 		if (strlen(&clean_arg[1]) == 0) {
-			return (NULL);					// handle error --file= ... (missing argument after =)
+			return (NULL);
 		}
 	}
 
@@ -134,7 +134,7 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 		return (ctx);
 	}
 
-	if (is_short_flag == false || (is_short_flag == true && strlen(clean_arg) > 1)) {	// -ffile
+	if (is_short_flag == false || (is_short_flag == true && strlen(clean_arg) > 1)) {
 		ctx->next = create_str_ctx_node(ctx, &clean_arg[1]);
 		if (ctx->next == NULL)
 			return (NULL);

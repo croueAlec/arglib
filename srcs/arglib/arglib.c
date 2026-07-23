@@ -5,8 +5,6 @@ static cli_context *handle_long_flag(char *current_arg, cli_context *ctx, size_t
 {
 	char	*separator = strchr(current_arg, '=');
 
-	printf("long flag check\n");
-	
 	if (separator != NULL) {
 		*separator = '\0';
 		printf("long flag check, separator : %s\n", &separator[1]);
@@ -64,8 +62,6 @@ static cli_context *handle_trailing_str_flags(cli_context *ctx, char **argv,  si
 {
 	for ( ; argv[i]; i++)
 	{
-		printf("str arguments ok\n");
-		printf("%s\n", argv[i]);
 		ctx = handle_str_flag(ctx, argv[i], argv, double_dash);
 		if (ctx == NULL)
 			return (NULL);

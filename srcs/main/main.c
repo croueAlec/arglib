@@ -4,19 +4,11 @@ void	print_userdata(cli_context *list)
 {
 	if (!list)
 		return ((void) printf("no list created, exiting\n"));
-	printf("\n\n\n\nlist check : %p\n", list);
-	printf("list->userdata check : %p\n", list->userdata);
 
 	do
 	{
 		cli_userdata	*userdata = list->userdata;
-		printf("\tinfile %d\n", userdata->flag_infile);
-		printf("\toutfile %d\n", userdata->flag_outfile);
-		printf("\thelp %d\n", userdata->flag_help);
-		printf("\tverbose %d\n", userdata->flag_verbose);
-
-		printf("\tstr %s\n", userdata->str);
-		printf("\n");
+		printf("\tinfile: %d\toutfile: %d\thelp: %d\tverbose: %d\tstr: [%s]\n", userdata->flag_infile, userdata->flag_outfile, userdata->flag_help, userdata->flag_verbose, userdata->str);
 		list = list->next;
 	} while (list);
 	

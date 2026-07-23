@@ -88,8 +88,6 @@ static cli_context *create_str_ctx_node(cli_context *ctx, char *str)
 	if (userdata->str == NULL)
 		return (free_arglib_node(ctx), NULL);
 
-	printf("\t\t\tstr node : '%s'\t%p==%p\n", userdata->str, userdata, new->userdata);
-
 	return (new);
 }
 
@@ -108,8 +106,6 @@ static cli_context *flag_str_option_handle(cli_context *ctx, char *clean_arg, ch
 
 static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
-	printf("clean arg : %s\n", clean_arg);
-
 	cli_context *new = new_context(ctx);
 	if (new == NULL)
 		return (free_arglib_list(ctx), NULL);

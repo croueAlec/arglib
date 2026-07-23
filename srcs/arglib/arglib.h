@@ -43,8 +43,6 @@ typedef struct cli_flag_config
 {
 	bool	allow_double_dash_separator;
 	bool	positional_argument_order_sensitive;
-	bool	short_flag_fatal;
-	bool	long_flag_fatal;
 }	cli_flag_config;
 
 extern const cli_flag_handler flags[];

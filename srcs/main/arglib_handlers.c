@@ -145,7 +145,7 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 	return (ctx);
 }
 
-const cli_flag_config flag_config = { true, false, false, false };
+const cli_flag_config flag_config = { true, false };
 
 const cli_flag_handler flags[] = {
 	{{ 'v', "verbose", NO_FLAG_ARG, "Defines the verbosity of the program."}, flag_verbose_handle},

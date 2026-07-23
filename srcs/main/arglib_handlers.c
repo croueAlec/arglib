@@ -91,8 +91,6 @@ static cli_context *create_str_ctx_node(cli_context *ctx, char *str)
 
 	printf("\t\t\tstr node : '%s'\t%p==%p\n", userdata->str, userdata, new->userdata);
 
-	new->flag_stop = true;
-
 	return (new);
 }
 
@@ -102,7 +100,6 @@ static cli_context *flag_str_option_handle(cli_context *ctx, char *clean_arg, ch
 	if (ctx == NULL)
 		return (free_arglib_node(ctx), NULL);
 
-	ctx->flag_stop = false;
 	((cli_userdata*)ctx->userdata)->flag_str = true;
 	((cli_userdata*)ctx->userdata)->flag_cut_str = is_double_dash;
 
@@ -135,8 +132,10 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 		}
 	}
 
-	if (is_short_flag == true && strlen(clean_arg) == 1)
+	if (is_short_flag == true && strlen(clean_arg) == 1) {
+		ctx->flag_stop = true;
 		return (ctx);
+	}
 
 	if (is_short_flag == false || (is_short_flag == true && strlen(clean_arg) > 1)) {	// -ffile
 		ctx->next = create_str_ctx_node(ctx, &clean_arg[1]);
@@ -147,6 +146,9 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 
 		ctx = ctx->next;
 	}
+
+	if (is_short_flag == true)
+		ctx->flag_stop = true;
 
 	(void)argv;
 	return (ctx);

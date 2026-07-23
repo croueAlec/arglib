@@ -79,23 +79,23 @@ DEPS := $(patsubst %.c,$(OBJS_DIR)/%.d,$(SRC))
 all: fclean $(NAME)
 
 $(NAME): $(LIBFT) $(PENELOPE) $(OBJ)
-	@echo "$(GREEN)* Assembling $(BWHITE)$@$(DEFAULT)"
+	@printf "$(GREEN)* Assembling $(BWHITE)%s$(DEFAULT)\n" "$@"
 	@$(CC) $(CFLAGS) $(OBJ) $(LIB) $(INCLUDES_FLAGS) -o $@
 
 -include %(DEPS)
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
-	@echo "$(CYAN)- Compiling$(DEFAULT) $<"
+	@printf "$(CYAN)- Compiling$(DEFAULT) %s\n" "$<"
 	@mkdir -p $(OBJS_DIR)
 	@mkdir -p $(OBJS_DIR)/$(MAIN_DIR)
 	@mkdir -p $(OBJS_DIR)/$(ARGLIB_DIR)
 	@$(CC) $(DEP_FLAGS) $(COMPIL_DEFINES) $(CFLAGS) $(INCLUDES_FLAGS) -c $< -o $@
 
 clean:
-	@echo "$(RED)! Removing$(DEFAULT) ${OBJS_DIR} files"
+	@printf "$(RED)! Removing$(DEFAULT) ${OBJS_DIR} files\n"
 	@${RM} ${OBJS_DIR}
 
 fclean: clean
-	@echo "$(RED)! Removing$(DEFAULT) $(NAME)"
+	@printf "$(RED)! Removing$(DEFAULT) %s\n" "$(NAME)"
 	@$(RM) $(NAME)
 
 re: fclean all
@@ -106,23 +106,23 @@ cre:
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lib Rules ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 $(LIBFT):
-	@echo "$(CYAN)~ Compiling$(DEFAULT) $(PURPLE)$(LIBFT_DIR)$(DEFAULT)"
+	@printf "$(CYAN)~ Compiling$(DEFAULT) $(PURPLE)%s$(DEFAULT)\n" "$(LIBFT_DIR)"
 	@make -C $(LIBFT_DIR) $(LIB_FLAGS)
 
 $(PENELOPE):
-	@echo "$(CYAN)~ Compiling$(DEFAULT) $(PURPLE)$(PENELOPE_DIR)$(DEFAULT)"
+	@printf "$(CYAN)~ Compiling$(DEFAULT) $(PURPLE)%s$(DEFAULT)\n" "$(PENELOPE_DIR)"
 	@make -C $(PENELOPE_DIR) $(LIB_FLAGS)
 
 cleanlib:
-	@echo "$(RED)! Removing$(DEFAULT) $(PURPLE)$(LIBFT_DIR)$(DEFAULT)"
+	@printf "$(RED)! Removing$(DEFAULT) $(PURPLE)%s$(DEFAULT)\n" "$(LIBFT_DIR)"
 	@make clean -C $(LIBFT_DIR) $(LIB_FLAGS)
-	@echo "$(RED)! Removing$(DEFAULT) $(PURPLE)$(PENELOPE_DIR)$(DEFAULT)"
+	@printf "$(RED)! Removing$(DEFAULT) $(PURPLE)%s$(DEFAULT)\n" "$(PENELOPE_DIR)"
 	@make clean -C $(PENELOPE_DIR) $(LIB_FLAGS)
 
 fcleanlib:
-	@echo "$(RED)! Removing$(DEFAULT) $(PURPLE)$(LIBFT_DIR)$(DEFAULT)"
+	@printf "$(RED)! Removing$(DEFAULT) $(PURPLE)%s$(DEFAULT)\n" "$(LIBFT_DIR)"
 	@make fclean -C $(LIBFT_DIR) $(LIB_FLAGS)
-	@echo "$(RED)! Removing$(DEFAULT) $(PURPLE)$(PENELOPE_DIR)$(DEFAULT)"
+	@printf "$(RED)! Removing$(DEFAULT) $(PURPLE)%s$(DEFAULT)\n" "$(PENELOPE_DIR)"
 	@make fclean -C $(PENELOPE_DIR) $(LIB_FLAGS)
 
 relib: fcleanlib $(LIBFT)

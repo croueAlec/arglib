@@ -17,11 +17,12 @@ static cli_context *handle_long_flag(char *current_arg, cli_context *ctx, size_t
 		if (flags[i].metadata.long_flag && strcmp(current_arg, flags[i].metadata.long_flag) == 0) {
 			if (separator != NULL)
 				*separator = '=';
-			flags[i].handler(ctx, current_arg, argv, false);
-			return (NULL);
+			ctx = flags[i].handler(ctx, current_arg, argv, false);
+			return (ctx);
 		}
 	}
 
+	printf("error --flag does not match\n");
 	return (NULL);
 }
 

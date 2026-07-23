@@ -27,6 +27,7 @@ typedef struct cli_context
 	bool	flag_stop;
 
 	struct cli_context	*next;
+	struct cli_context	*prev;
 } cli_context;
 
 typedef cli_context *(*flag_handler_function)(cli_context *cli_context, char *clean_arg, char **argv, bool is_short_flag);

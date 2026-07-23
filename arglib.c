@@ -107,9 +107,15 @@ size_t get_flag_list_length()
 	return (i);
 }
 
+cli_context *get_first_ctx_node(cli_context *ctx)
+{
+	while (ctx && ctx->prev)
+		ctx = ctx->prev;
+	return (ctx);
+}
+
 cli_context *arglib(int argc, char **argv)
 {
-	cli_context	*head = NULL;
 	cli_context	*ctx = NULL;
 	size_t		flag_list_length = get_flag_list_length();
 	bool		double_dash = false;
@@ -129,17 +135,10 @@ cli_context *arglib(int argc, char **argv)
 				break;
 		}
 
-		if (i == 0)
-			head = ctx;
-
 		printf("ctx check : %p\n", ctx);
 
 		if (double_dash == true)
 			break;
-		// if (error == true) {
-		// 	printf("error\n");
-		// 	return (1);
-		// }
 	}
 
 	for ( ; i < (size_t)argc; i++)
@@ -147,5 +146,5 @@ cli_context *arglib(int argc, char **argv)
 		printf("%s\n", argv[i]);		// handle double dash (text arguments)
 	}
 
-	return (head);
+	return (get_first_ctx_node(ctx));
 }

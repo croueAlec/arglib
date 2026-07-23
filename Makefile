@@ -60,15 +60,17 @@ OBJS_DIR = objs
 ################################################################################
 #                                    SOURCES                                   #
 ################################################################################
-INCLUDES := $(SRCS_DIR)/$(MAIN_DIR) \
+INCLUDES := $(INCS_DIR) \
 			$(SRCS_DIR)/$(ARGLIB_DIR)
 
 INCLUDES_FLAGS := $(addprefix -I , $(INCLUDES))
 
 SRC :=	$(addprefix $(MAIN_DIR)/, \
-	main.c ) \
+	main.c \
+	arglib_handlers.c ) \
 	$(addprefix $(ARGLIB_DIR)/, \
-	arglib.c )
+	arglib.c \
+	arglib_utils.c)
 
 OBJ := $(patsubst %.c,$(OBJS_DIR)/%.o,$(SRC))
 DEPS := $(patsubst %.c,$(OBJS_DIR)/%.d,$(SRC))

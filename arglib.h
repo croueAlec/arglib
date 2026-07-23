@@ -9,7 +9,8 @@
 typedef enum arg_requirement {
 	NO_FLAG_ARG = 0,
 	MANDATORY_FLAG_ARG = 1,
-	OPTIONNAL_FLAG_ARG = 2
+	OPTIONNAL_FLAG_ARG = 2,
+	STR_FLAG_ARG = 3
 } arg_requirement;
 
 typedef struct cli_flag_metadata
@@ -30,7 +31,7 @@ typedef struct cli_context
 	struct cli_context	*prev;
 } cli_context;
 
-typedef cli_context *(*flag_handler_function)(cli_context *cli_context, char *clean_arg, char **argv, bool is_short_flag);
+typedef cli_context *(*flag_handler_function)(cli_context *cli_context, char *clean_arg, char **argv, bool option);
 
 typedef struct cli_flag_handler
 {
@@ -49,7 +50,7 @@ typedef struct cli_flag_config
 extern const cli_flag_handler flags[];
 extern const cli_flag_config flag_config;
 
-cli_context	*arglib(int argc, char **argv);
+cli_context	*arglib(size_t argc, char **argv);
 const char	*is_cli_flag_handler_valid(const cli_flag_handler *flags);
 
 #endif

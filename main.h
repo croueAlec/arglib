@@ -13,6 +13,8 @@ typedef struct cli_userdata
 	bool	flag_outfile;
 	bool	flag_help;
 	bool	flag_verbose;
+	bool	flag_cut_str;
+	bool	flag_str;
 
 	char	*str;
 } cli_userdata;

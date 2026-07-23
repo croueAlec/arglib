@@ -70,6 +70,20 @@ cli_context *create_str_ctx_node(cli_context *ctx, char *str)
 	return (new);
 }
 
+cli_context *flag_str_option_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_double_dash)
+{
+	ctx = create_str_ctx_node(ctx, clean_arg);
+	if (ctx == NULL)
+		return (NULL);
+
+	ctx->flag_stop = false;
+	((cli_userdata*)ctx->userdata)->flag_str = true;
+	((cli_userdata*)ctx->userdata)->flag_cut_str = is_double_dash;
+
+	(void)argv;
+	return (ctx);
+}
+
 cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
 	printf("clean arg : %s\n", clean_arg);
@@ -114,6 +128,7 @@ const cli_flag_handler flags[] = {
 	{{ 'v', "verbose", NO_FLAG_ARG, "Defines the verbosity of the program."}, flag_verbose_handle},
 	{{ 'h', "help", NO_FLAG_ARG, "Shows this help page and exits."}, flag_help_handle},
 	{{ 'f', "file", MANDATORY_FLAG_ARG, "Sets the file used as input"}, flag_file_option_handle},
+	{{ '\0', "", STR_FLAG_ARG, ""}, flag_str_option_handle},
 	{{ 0, NULL, 0, NULL}, NULL}
 };
 
@@ -149,9 +164,13 @@ int	main(int argc, char **argv)
 
 	cli_context	*list = NULL;
 
-	list = arglib(argc - 1, &argv[1]);
-	printf("list created : %p\n", list);
-	print_userdata(list);
+	list = arglib((size_t)(argc - 1), &argv[1]);
+	if (list != (cli_context*)0x1) {
+		printf("list created : %p\n", list);
+		print_userdata(list);
+	} else {
+		printf("no arguments, exiting\n");
+	}
 
 	(void)argc;
 	return 0;

@@ -114,8 +114,39 @@ cli_context *get_first_ctx_node(cli_context *ctx)
 	return (ctx);
 }
 
-cli_context *arglib(int argc, char **argv)
+flag_handler_function get_str_flag_handler(size_t flag_list_length)
 {
+	size_t	i = 0;
+	while (i < flag_list_length)
+	{
+		if (flags[i].metadata.required_arg == STR_FLAG_ARG)
+			return (flags[i].handler);
+		i++;
+	}
+
+	return (flags[i + 1].handler);
+}
+
+cli_context *set_str_arguments(cli_context *ctx, char **argv,  size_t flag_list_length, bool double_dash)
+{
+	flag_handler_function	flag_handler = get_str_flag_handler(flag_list_length);
+
+	for (size_t i = 0; argv[i]; i++)
+	{
+		printf("%s\n", argv[i]);
+		ctx = flag_handler(ctx, argv[i], argv, double_dash);
+		if (ctx == NULL)
+			return (NULL);
+	}
+
+	return (ctx);
+}
+
+cli_context *arglib(size_t argc, char **argv)
+{
+	if (argc == 0)
+		return ((cli_context*)0x1);
+
 	cli_context	*ctx = NULL;
 	size_t		flag_list_length = get_flag_list_length();
 	bool		double_dash = false;
@@ -124,27 +155,18 @@ cli_context *arglib(int argc, char **argv)
 	for ( ; i < (size_t)argc; i++)
 	{
 		if (argv[i][0] == '-' && argv[i][1] == '-' && argv[i][2] == '\0') {
-			double_dash = set_double_dash_separator();
+			double_dash = true;
+			break;
 		} else if (argv[i][0] == '-' && argv[i][1] == '-') {
 			ctx = handle_long_flag(&argv[i][2], ctx, flag_list_length, argv);
 		} else if (argv[i][0] == '-') {
 			ctx = handle_short_flag(&argv[i][1], ctx, flag_list_length, argv);
-		} else {
-			printf("> %s\n", argv[i]);
-			if (flag_config.positional_argument_order_sensitive == true)
+		} else if (flag_config.positional_argument_order_sensitive == true || i == 0) {
 				break;
 		}
-
-		printf("ctx check : %p\n", ctx);
-
-		if (double_dash == true)
-			break;
 	}
 
-	for ( ; i < (size_t)argc; i++)
-	{
-		printf("%s\n", argv[i]);		// handle double dash (text arguments)
-	}
+	ctx = set_str_arguments(ctx, &argv[i], flag_list_length, double_dash);
 
 	return (get_first_ctx_node(ctx));
 }

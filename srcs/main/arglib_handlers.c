@@ -1,25 +1,32 @@
 #include "main.h"
 
-static void free_userdata(cli_userdata *userdata)
+cli_context	*get_first_ctx_node(cli_context *ctx);
+
+static void free_arglib_node(cli_context *ctx)
 {
+	cli_userdata	*userdata = (cli_userdata*)ctx->userdata;
+
 	if (userdata) {
 		if (userdata->str) {
 			free(userdata->str);
 		}
 		free(userdata);
 	}
+
+	free(ctx);
 }
 
-void free_arglib_nodes(cli_context *ctx)
+void free_arglib_list(cli_context *ctx)
 {
 	cli_context	*tmp = NULL;
+	
+	ctx = get_first_ctx_node(ctx);
 
-	while (ctx && ctx->prev)
+	while (ctx && ctx->next)
 	{
 		tmp = ctx;
-		ctx = ctx->prev;
-		free_userdata(tmp->userdata);
-		free(tmp);
+		ctx = ctx->next;
+		free_arglib_node(tmp);
 	}
 }
 
@@ -29,16 +36,16 @@ static cli_context	*new_context(cli_context *current_ctx)
 	if (new == NULL)
 		return (NULL);
 
-	new->userdata = calloc(1, sizeof(cli_userdata));
-	if (new->userdata == NULL)
-		return (NULL);
-
 	if (current_ctx != NULL) {
 		current_ctx->next = new;
 		new->prev = current_ctx;
 	}
 
-	printf("new context: [%p]\tuserdata: [%p]\tcurrent ctx: [%p]\n", new, new->userdata, current_ctx);
+	new->userdata = calloc(1, sizeof(cli_userdata));
+	if (new->userdata == NULL)
+		return (free(new), NULL);
+
+	// printf("new context: [%p]\tuserdata: [%p]\tcurrent ctx: [%p]\n", new, new->userdata, current_ctx);
 	return (new);
 }
 
@@ -46,7 +53,7 @@ static cli_context *flag_verbose_handle(cli_context *ctx, char *clean_arg, char 
 {
 	ctx = new_context(ctx);
 	if (ctx == NULL)
-		return (NULL);
+		return (free_arglib_node(ctx), NULL);
 
 	((cli_userdata*)ctx->userdata)->flag_verbose = true;
 
@@ -60,7 +67,7 @@ static cli_context *flag_help_handle(cli_context *ctx, char *clean_arg, char **a
 {
 	ctx = new_context(ctx);
 	if (ctx == NULL)
-		return (NULL);
+		return (free_arglib_node(ctx), NULL);
 
 	((cli_userdata*)ctx->userdata)->flag_help = true;
 
@@ -80,7 +87,7 @@ static cli_context *create_str_ctx_node(cli_context *ctx, char *str)
 
 	userdata->str = strdup(str);
 	if (userdata->str == NULL)
-		return (NULL);
+		return (free_arglib_node(ctx), NULL);
 
 	printf("\t\t\tstr node : '%s'\t%p==%p\n", userdata->str, userdata, new->userdata);
 
@@ -93,7 +100,7 @@ static cli_context *flag_str_option_handle(cli_context *ctx, char *clean_arg, ch
 {
 	ctx = create_str_ctx_node(ctx, clean_arg);
 	if (ctx == NULL)
-		return (NULL);
+		return (free_arglib_node(ctx), NULL);
 
 	ctx->flag_stop = false;
 	((cli_userdata*)ctx->userdata)->flag_str = true;
@@ -107,11 +114,13 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 {
 	printf("clean arg : %s\n", clean_arg);
 
-	ctx = new_context(ctx);	// check leaks userdata malloc fail
-	if (ctx == NULL)
-		return (NULL);
+	cli_context *new = new_context(ctx);	// check leaks userdata malloc fail
+	if (new == NULL)
+		return (free_arglib_list(ctx), NULL);
+	else
+		ctx = new;
 
-	printf("\t\t\tuserdata check : %p\n", ctx->userdata);
+	// printf("\t\t\tuserdata check : %p\n", ctx->userdata);
 
 	((cli_userdata *)ctx->userdata)->flag_infile = true;
 
@@ -134,7 +143,7 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 		if (ctx->next == NULL)
 			return (NULL);					// check leaks in the original new in case of failure
 
-		printf("context: [%p]\tnext ctx: [%p]\tnext userdata [%p]\tstr: [%s]\n", ctx, ctx->next, ctx->next->userdata, ((cli_userdata*)ctx->next->userdata)->str);
+		// printf("context: [%p]\tnext ctx: [%p]\tnext userdata [%p]\tstr: [%s]\n", ctx, ctx->next, ctx->next->userdata, ((cli_userdata*)ctx->next->userdata)->str);
 
 		ctx = ctx->next;
 	}

@@ -21,4 +21,6 @@ typedef struct cli_userdata
 	char	*str;
 } cli_userdata;
 
+void free_arglib_list(cli_context *ctx);
+
 #endif

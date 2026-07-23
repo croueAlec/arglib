@@ -45,7 +45,6 @@ static cli_context	*new_context(cli_context *current_ctx)
 	if (new->userdata == NULL)
 		return (free(new), NULL);
 
-	// printf("new context: [%p]\tuserdata: [%p]\tcurrent ctx: [%p]\n", new, new->userdata, current_ctx);
 	return (new);
 }
 
@@ -111,13 +110,11 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 {
 	printf("clean arg : %s\n", clean_arg);
 
-	cli_context *new = new_context(ctx);	// check leaks userdata malloc fail
+	cli_context *new = new_context(ctx);
 	if (new == NULL)
 		return (free_arglib_list(ctx), NULL);
 	else
 		ctx = new;
-
-	// printf("\t\t\tuserdata check : %p\n", ctx->userdata);
 
 	((cli_userdata *)ctx->userdata)->flag_infile = true;
 
@@ -140,9 +137,7 @@ static cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, c
 	if (is_short_flag == false || (is_short_flag == true && strlen(clean_arg) > 1)) {	// -ffile
 		ctx->next = create_str_ctx_node(ctx, &clean_arg[1]);
 		if (ctx->next == NULL)
-			return (NULL);					// check leaks in the original new in case of failure
-
-		// printf("context: [%p]\tnext ctx: [%p]\tnext userdata [%p]\tstr: [%s]\n", ctx, ctx->next, ctx->next->userdata, ((cli_userdata*)ctx->next->userdata)->str);
+			return (NULL);
 
 		ctx = ctx->next;
 	}

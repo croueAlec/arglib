@@ -51,7 +51,6 @@ static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_
 			}
 
 		}
-
 		if (flag_found == false)
 			return (dprintf(2, "arguments: invalid option -- '%c'\nTry 'arguments --help' for more information.\n", current_arg[j]), NULL);
 
@@ -59,10 +58,6 @@ static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_
 	}
 
 	return (ctx);
-
-	// flag invalid (stop all + error)
-	// flag found (ok) true and false
-	// flag with mandatory option found (ok but stop iterating) true and true
 }
 
 static cli_context *handle_trailing_str_flags(cli_context *ctx, char **argv,  size_t i, bool double_dash, flag_handler_function handle_str_flag)

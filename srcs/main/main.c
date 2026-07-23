@@ -1,6 +1,4 @@
 #include "main.h"
-#include "arglib.h"
-#include "arglib_defines.h"
 
 const cli_flag_config flag_config = { true, false, false, false };
 

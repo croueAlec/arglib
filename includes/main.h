@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../srcs/arglib/arglib.h"
+
 typedef struct cli_userdata
 {
 	bool	flag_infile;

@@ -13,45 +13,57 @@ cli_context	*new_context(cli_context *current_ctx)
 	new->userdata = calloc(1, sizeof(cli_userdata));
 	if (new->userdata == NULL)
 		return (NULL);
-	printf("userdata created\n");
 
-	if (current_ctx != NULL)
+	if (current_ctx != NULL) {
 		current_ctx->next = new;
+		new->prev = current_ctx;
+	}
+
+	printf("new context: [%p]\tuserdata: [%p]\tcurrent ctx: [%p]\n", new, new->userdata, current_ctx);
 	return (new);
 }
 
-cli_context *flag_verbose_handle(cli_context *ptr1, char *clean_arg, char **argv, bool is_short_flag)
+cli_context *flag_verbose_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
-	cli_context	*list = ptr1;
-	printf("verbose : %s\n", argv[0]);
+	ctx = new_context(ctx);
+	if (ctx == NULL)
+		return (NULL);
 
-	(void)list;
-	(void)argv;
+	((cli_userdata*)ctx->userdata)->flag_verbose = true;
+
 	(void)clean_arg;
+	(void)argv;
 	(void)is_short_flag;
-	return (NULL);
+	return (ctx);
 }
 
 cli_context *flag_help_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
-	cli_context	*list = ctx;
-	printf("help : %s\n", argv[0]);
-	(void)list;
-	(void)argv;
+	ctx = new_context(ctx);
+	if (ctx == NULL)
+		return (NULL);
+
+	((cli_userdata*)ctx->userdata)->flag_help = true;
+
 	(void)clean_arg;
+	(void)argv;
 	(void)is_short_flag;
-	return (NULL);
+	return (ctx);
 }
 
-cli_context *create_str_ctx_node(char *str)
+cli_context *create_str_ctx_node(cli_context *ctx, char *str)
 {
-	cli_context *new = new_context(NULL);
+	cli_context		*new = new_context(ctx);
 	if (!new)
 		return (NULL);
 
-	((cli_userdata*)new->userdata)->str = strdup(str);
-	if (((cli_userdata*)new->userdata)->str == NULL)
+	cli_userdata	*userdata = new->userdata;
+
+	userdata->str = strdup(str);
+	if (userdata->str == NULL)
 		return (NULL);
+
+	printf("\t\t\tstr node : '%s'\t%p==%p\n", userdata->str, userdata, new->userdata);
 
 	new->flag_stop = true;
 
@@ -61,7 +73,6 @@ cli_context *create_str_ctx_node(char *str)
 cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **argv, bool is_short_flag)
 {
 	printf("clean arg : %s\n", clean_arg);
-	char		*value = NULL;
 
 	ctx = new_context(ctx);	// check leaks userdata malloc fail
 	if (ctx == NULL)
@@ -69,7 +80,7 @@ cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **a
 
 	printf("\t\t\tuserdata check : %p\n", ctx->userdata);
 
-	((cli_userdata *)ctx->next)->flag_infile = true;
+	((cli_userdata *)ctx->userdata)->flag_infile = true;
 
 	if (is_short_flag == false) {					// --file=file
 		clean_arg = strchr(clean_arg, '=');						// --file=file --file file --file=
@@ -78,50 +89,26 @@ cli_context *flag_file_option_handle(cli_context *ctx, char *clean_arg, char **a
 		}
 
 		if (strlen(&clean_arg[1]) == 0) {
-			return (NULL);					// handle error --file= ...
+			return (NULL);					// handle error --file= ... (missing argument after =)
 		}
 	}
 
 	if (is_short_flag == true && strlen(clean_arg) == 1)
 		return (ctx);
 
-	else if (is_short_flag == true && strlen(clean_arg) > 1) {	// -ffile
-		ctx->next = create_str_ctx_node(&clean_arg[1]);
+	if (is_short_flag == false || (is_short_flag == true && strlen(clean_arg) > 1)) {	// -ffile
+		ctx->next = create_str_ctx_node(ctx, &clean_arg[1]);
 		if (ctx->next == NULL)
 			return (NULL);					// check leaks in the original new in case of failure
 
-		printf("filename single char '%s'\n", ((cli_userdata *)ctx->next)->str);
+		printf("context: [%p]\tnext ctx: [%p]\tnext userdata [%p]\tstr: [%s]\n", ctx, ctx->next, ctx->next->userdata, ((cli_userdata*)ctx->next->userdata)->str);
 
 		ctx = ctx->next;
 	}
 
-	printf("file option handle new check %p\n", new);
-
-	(void)clean_arg;
-	(void)value;
 	(void)argv;
-	return (new);
+	return (ctx);
 }
-
-// cli_context	*flag_generic_str_handle(cli_context *ctx, char *clean_arg, char **argv)
-// {
-// 	cli_context	*list = ctx;
-// 	cli_context	*new = calloc(1, (sizeof(cli_context)));
-// 	if (new == NULL)
-// 		return (NULL);
-
-// 	new->filename = strdup(argv[0]);
-// 	if (new->filename == NULL)
-// 		return (NULL);
-
-// 	new->flag_outfile = true;
-
-// 	list->next = new;
-
-// 	(void)clean_arg;
-// 	(void)argv;
-// 	return (new);
-// }
 
 const cli_flag_handler flags[] = {
 	{{ 'v', "verbose", NO_FLAG_ARG, "Defines the verbosity of the program."}, flag_verbose_handle},
@@ -132,18 +119,20 @@ const cli_flag_handler flags[] = {
 
 void	print_userdata(cli_context *list)
 {
-	printf("list check : %p\n", list);
+	if (!list)
+		return ((void) printf("no list created, exiting\n"));
+	printf("\n\n\n\nlist check : %p\n", list);
 	printf("list->userdata check : %p\n", list->userdata);
 
 	do
 	{
 		cli_userdata	*userdata = list->userdata;
-		printf("help %d\n", userdata->flag_help);
-		printf("infile %d\n", userdata->flag_infile);
-		printf("inline infile %d\n", userdata->flag_inline_infile);
-		printf("outfile %d\n", userdata->flag_outfile);
-		printf("%s\n", userdata->filename);
-		printf("%s\n", userdata->str);
+		printf("\tinfile %d\n", userdata->flag_infile);
+		printf("\toutfile %d\n", userdata->flag_outfile);
+		printf("\thelp %d\n", userdata->flag_help);
+		printf("\tverbose %d\n", userdata->flag_verbose);
+
+		printf("\tstr %s\n", userdata->str);
 		printf("\n");
 		list = list->next;
 	} while (list);
@@ -158,14 +147,10 @@ int	main(int argc, char **argv)
 		return (1);
 	}
 
-	cli_context	*list = calloc(1, (sizeof(cli_context)));
-	if (!list)
-		return ((void)dprintf(2, "malloc error list main"), 1);
-
-	printf("ctx check : %p\n", list);
+	cli_context	*list = NULL;
 
 	list = arglib(argc - 1, &argv[1]);
-	printf("list created\n");
+	printf("list created : %p\n", list);
 	print_userdata(list);
 
 	(void)argc;

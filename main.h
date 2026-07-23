@@ -10,10 +10,10 @@
 typedef struct cli_userdata
 {
 	bool	flag_infile;
-	bool	flag_inline_infile;
 	bool	flag_outfile;
 	bool	flag_help;
-	char	*filename;
+	bool	flag_verbose;
+
 	char	*str;
 } cli_userdata;
 

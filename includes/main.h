@@ -11,14 +11,14 @@
 
 typedef struct cli_userdata
 {
-	bool	flag_infile;
-	bool	flag_outfile;
-	bool	flag_help;
-	bool	flag_verbose;
-	bool	flag_cut_str;
-	bool	flag_str;
+	bool flag_infile;
+	bool flag_outfile;
+	bool flag_help;
+	bool flag_verbose;
+	bool flag_cut_str;
+	bool flag_str;
 
-	char	*str;
+	char *str;
 } cli_userdata;
 
 void free_arglib_list(cli_context *ctx);

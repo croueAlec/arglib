@@ -5,15 +5,23 @@
 const char	*is_cli_flag_handler_valid(const cli_flag_handler *flags)
 {
 	if (flags == NULL)
-		return ("Error : The 'flags' array must at least contain an empty entry"); // flags array must exist
+		return ("Error : The 'flags' may not be NULL"); // flags array must exist
 
+	bool	str_flag_handler_found = false;
 	size_t	i = 0;
 	while (flags[i].handler)
 	{
 		if (flags[i].metadata.long_flag == NULL || flags[i].metadata.desc == NULL) {
 			return ("Error : Flags cannot contain NULL strings"); // only the last flag may have NULL strings
 		}
+
+		if (flags[i].metadata.required_arg == STR_FLAG_ARG)
+			str_flag_handler_found = true;
 		i++;
+	}
+
+	if (str_flag_handler_found == false) {
+		return ("Error : A flag_handler with the STR_FLAG_ARG requirement must be set"); // an STR_FLAG_ARG function prototype must be present
 	}
 
 	if (flags[i].handler == NULL && flags[i].metadata.long_flag != NULL && flags[i].metadata.desc != NULL) {

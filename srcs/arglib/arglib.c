@@ -3,15 +3,14 @@
 
 static cli_context *handle_long_flag(char *current_arg, cli_context *ctx, size_t flag_list_length, char **argv)
 {
-	char	*separator = strchr(current_arg, '=');
+	char *separator = strchr(current_arg, '=');
 
 	if (separator != NULL) {
 		*separator = '\0';
 		printf("long flag check, separator : %s\n", &separator[1]);
 	}
 
-	for (size_t i = 0; i < flag_list_length; i++)
-	{
+	for (size_t i = 0; i < flag_list_length; i++) {
 		if (flags[i].metadata.long_flag && strcmp(current_arg, flags[i].metadata.long_flag) == 0) {
 			if (separator != NULL)
 				*separator = '=';
@@ -26,16 +25,14 @@ static cli_context *handle_long_flag(char *current_arg, cli_context *ctx, size_t
 
 static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_t flag_list_length, char **argv)
 {
-	cli_context	*new = NULL;
-	bool		flag_found = false;
+	cli_context *new = NULL;
+	bool		 flag_found = false;
 	if (current_arg[0] == '\0')
 		return (false);
 
-	size_t	j = 0;
-	for ( ; current_arg[j]; j++)
-	{
-		for (size_t i = 0; i < flag_list_length; i++)
-		{
+	size_t j = 0;
+	for (; current_arg[j]; j++) {
+		for (size_t i = 0; i < flag_list_length; i++) {
 			if (current_arg[j] == flags[i].metadata.short_flag) {
 				new = flags[i].handler(ctx, current_arg, argv, true);
 				if (ctx != NULL) {
@@ -47,7 +44,6 @@ static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_
 				if (ctx->flag_stop == true)
 					return (ctx);
 			}
-
 		}
 		if (flag_found == false)
 			return (dprintf(2, "arguments: invalid option -- '%c'\nTry 'arguments --help' for more information.\n", current_arg[j]), NULL);
@@ -58,10 +54,9 @@ static cli_context *handle_short_flag(char *current_arg, cli_context *ctx, size_
 	return (ctx);
 }
 
-static cli_context *handle_trailing_str_flags(cli_context *ctx, char **argv,  size_t i, bool double_dash, flag_handler_function handle_str_flag)
+static cli_context *handle_trailing_str_flags(cli_context *ctx, char **argv, size_t i, bool double_dash, flag_handler_function handle_str_flag)
 {
-	for ( ; argv[i]; i++)
-	{
+	for (; argv[i]; i++) {
 		ctx = handle_str_flag(ctx, argv[i], argv, double_dash);
 		if (ctx == NULL)
 			return (NULL);
@@ -73,18 +68,18 @@ static cli_context *handle_trailing_str_flags(cli_context *ctx, char **argv,  si
 cli_context *arglib(size_t argc, char **argv)
 {
 	if (argc == 0)
-		return ((cli_context*)0x1);
+		return ((cli_context *)0x1);
 
-	cli_context				*ctx = NULL;
-	size_t					flag_list_length = get_flag_list_length();
-	bool					double_dash = false;
-	size_t					i = 0;
-	flag_handler_function	handle_str_flag = get_str_flag_handler(flag_list_length);
+	cli_context			 *ctx = NULL;
+	size_t				  flag_list_length = get_flag_list_length();
+	bool				  double_dash = false;
+	size_t				  i = 0;
+	flag_handler_function handle_str_flag = get_str_flag_handler(flag_list_length);
+
 	if (handle_str_flag == NULL)
 		return ((void)dprintf(2, "error: missing flag_str_option_handle in Flag Prototype Array\n"), NULL);
 
-	for ( ; i < (size_t)argc; i++)
-	{
+	for (; i < (size_t)argc; i++) {
 		if (argv[i][0] == '-' && argv[i][1] == '-' && argv[i][2] == '\0') {
 			double_dash = true;
 			break;
@@ -93,7 +88,7 @@ cli_context *arglib(size_t argc, char **argv)
 		} else if (argv[i][0] == '-') {
 			ctx = handle_short_flag(&argv[i][1], ctx, flag_list_length, argv);
 		} else if (flag_config.positional_argument_order_sensitive == true || i == 0) {
-				break;
+			break;
 		} else {
 			ctx = handle_str_flag(ctx, argv[i], argv, double_dash);
 		}

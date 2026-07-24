@@ -80,6 +80,8 @@ cli_context *arglib(size_t argc, char **argv)
 	bool					double_dash = false;
 	size_t					i = 0;
 	flag_handler_function	handle_str_flag = get_str_flag_handler(flag_list_length);
+	if (handle_str_flag == NULL)
+		return ((void)dprintf(2, "error: missing flag_str_option_handle in Flag Prototype Array\n"), NULL);
 
 	for ( ; i < (size_t)argc; i++)
 	{

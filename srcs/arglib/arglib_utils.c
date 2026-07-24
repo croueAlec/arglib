@@ -58,5 +58,5 @@ flag_handler_function get_str_flag_handler(size_t flag_list_length)
 		i++;
 	}
 
-	return (flags[i + 1].handler);
+	return (NULL);
 }
